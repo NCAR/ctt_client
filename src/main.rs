@@ -1,67 +1,57 @@
-use ::reqwest::blocking::Client;
-use graphql_client::{reqwest::post_graphql_blocking as post_graphql, GraphQLQuery};
-use chrono::NaiveDateTime;
-use prettytable::*;
+use reqwest::blocking::Client;
+use std::time::Duration;
+use prettytable::{row, Table};
+use prettytable::format::consts::FORMAT_CLEAN;
+use clap::{Parser, Subcommand};
 
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "issues.graphql",
-    response_derives = "Debug"
-    )]
-struct Issues;
+use ctt_client::{list_issues,create_issue};
 
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "schema.graphql",
-    query_path = "newIssue.graphql",
-    response_derives = "Debug"
-    )]
-struct NewIssue;
+#[derive(Parser)]
+#[command(name = "ctt")]
+#[command(about = "cli client for the ctt graphql api server", long_about=None)]
+struct Cli {
+    #[command(subcommand)]
+    cmd: Command,
+    #[arg(short, long)]
+    server: Option<String>,
+}
 
-
-fn main() {
-    let client = Client::new();
-
-    let v = new_issue::Variables {
-        new_issue: new_issue::NewIssue {
-            assigned_to: "shanks".to_string(),
-            description: "cli created".to_string(),
-            down_siblings: false,
-            enforce_down: false,
-            target: "gu0004".to_string(),
-            title: "cli test ticket".to_string()
-        }
-    };
-
-    let resp = post_graphql::<NewIssue, _>(&client, "http:localhost:8000", v).unwrap();
-    if let Some(errors) = resp.errors {
-        println!("error:");
-        for error in &errors {
-            println!("{:?}", error);
-        }
-    }
-    let resp_data = resp.data.unwrap();
-    println!("{:?}", resp_data);
+#[derive(Subcommand)]
+enum Command {
+    List(list_issues::Variables),
+    Open(create_issue::NewIssue),
+}
 
 
-    let variables = issues::Variables {
-        status: Some("OPEN".to_string()),
-        target: None,
-    };
-
-    let response_body =
-        post_graphql::<Issues, _>(&client, "http://localhost:8000", variables).unwrap();
-
-    let response_data: issues::ResponseData = response_body.data.expect("missing response data");
-
-    let mut table = prettytable::Table::new();
-    table.set_format(*prettytable::format::consts::FORMAT_CLEAN);
+fn print_issues(issues: &Vec<list_issues::ListIssuesIssues>) {
+    let mut table = Table::new();
+    table.set_format(*FORMAT_CLEAN);
     table.set_titles(row!(b => "id", "target", "assignee", "title"));
 
-    for issue in response_data.issues {
+    for issue in issues {
         table.add_row(row!(issue.id, issue.target, issue.assigned_to, issue.title));
     }
     table.printstd();
+}
 
+fn main() {
+    let client = Client::builder()
+        .timeout(Duration::from_secs(5))
+        .build().unwrap();
+    let args = Cli::parse();
+    let srv = if let Some(s) = args.server {
+        s 
+    } else {
+        "http://localhost:8000".to_string()
+    };
+    match args.cmd {
+        Command::Open(new_issue) => {
+            let id = ctt_client::issue_open(&client, &srv, new_issue).unwrap();
+            println!("Opened issue {}", &id);
+        },
+        Command::List(filter) => {
+            let issues = ctt_client::issue_list(&client, &srv, filter).unwrap();
+            print_issues(&issues);
+        },
+    };
 }

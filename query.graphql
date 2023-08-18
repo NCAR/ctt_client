@@ -1,4 +1,4 @@
-query Issues($status: String, $target: String) {
+query ListIssues($status: String, $target: String) {
   issues(issueStatus: $status, target: $target) {
     assignedTo
     description
@@ -13,5 +13,10 @@ query Issues($status: String, $target: String) {
       date
       comment
     }
+  }
+}
+mutation CreateIssue($newIssue: NewIssue!) {
+  open(issue: $newIssue) {
+    id
   }
 }

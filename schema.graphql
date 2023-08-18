@@ -43,7 +43,7 @@ ISO 8601 combined date and time without timezone.
 scalar NaiveDateTime
 
 input NewIssue {
-	assignedTo: String!
+	assignedTo: String
 	description: String!
 	downSiblings: Boolean!
 	enforceDown: Boolean!
