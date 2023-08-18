@@ -1,0 +1,17 @@
+query Issues($status: String, $target: String) {
+  issues(issueStatus: $status, target: $target) {
+    assignedTo
+    description
+    downSiblings
+    enforceDown
+    id
+    issueStatus
+    target
+    title
+    comments {
+      author
+      date
+      comment
+    }
+  }
+}

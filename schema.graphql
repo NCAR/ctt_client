@@ -1,0 +1,72 @@
+
+type Comment {
+	author: String!
+	date: NaiveDateTime!
+	comment: String!
+}
+
+
+
+
+type Issue {
+	assignedTo: String!
+	description: String!
+	downSiblings: Boolean!
+	enforceDown: Boolean!
+	id: Int!
+	issueStatus: IssueStatus!
+	target: String!
+	title: String!
+	comments: [Comment!]!
+}
+
+enum IssueStatus {
+	OPEN
+	CLOSED
+}
+
+type Mutation {
+	open(issue: NewIssue!): Issue!
+	close(issue: Int!, comment: String!): String!
+	update(issue: UpdateIssue!): Issue!
+	drain(issue: Int!): String!
+	release(issue: Int!): String!
+}
+
+"""
+ISO 8601 combined date and time without timezone.
+
+# Examples
+
+* `2015-07-01T08:59:60.123`,
+"""
+scalar NaiveDateTime
+
+input NewIssue {
+	assignedTo: String!
+	description: String!
+	downSiblings: Boolean!
+	enforceDown: Boolean!
+	target: String!
+	title: String!
+}
+
+type Query {
+	issue(issue: Int!): Issue
+	issues(issueStatus: IssueStatus, target: String): [Issue!]!
+}
+
+
+input UpdateIssue {
+	assignedTo: String
+	description: String
+	enforceDown: Boolean
+	id: Int!
+	title: String
+}
+
+schema {
+	query: Query
+	mutation: Mutation
+}
+

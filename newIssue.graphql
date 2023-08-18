@@ -1,0 +1,6 @@
+mutation NewIssue($newIssue: NewIssue!) {
+  open(issue: $newIssue) {
+    id
+    title
+  }
+}
