@@ -45,8 +45,8 @@ scalar NaiveDateTime
 input NewIssue {
 	assignedTo: String
 	description: String!
-	downSiblings: Boolean!
-	enforceDown: Boolean!
+	downSiblings: Boolean
+	enforceDown: Boolean
 	target: String!
 	title: String!
 }

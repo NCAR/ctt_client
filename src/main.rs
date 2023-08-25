@@ -1,8 +1,10 @@
 use reqwest::blocking::Client;
+use chrono::{Utc, NaiveDateTime};
 use std::time::Duration;
 use prettytable::{row, Table};
 use prettytable::format::consts::FORMAT_CLEAN;
 use clap::{Parser, Subcommand};
+use serde::{Deserialize,Serialize};
 
 use ctt_client::{list_issues,create_issue};
 
@@ -22,6 +24,11 @@ enum Command {
     Open(create_issue::NewIssue),
 }
 
+#[derive(clap::Args)]
+struct Credentials {
+    user: String,
+}
+
 
 fn print_issues(issues: &Vec<list_issues::ListIssuesIssues>) {
     let mut table = Table::new();
@@ -34,7 +41,20 @@ fn print_issues(issues: &Vec<list_issues::ListIssuesIssues>) {
     table.printstd();
 }
 
+#[derive(Serialize)]
+struct UserLogin {
+    user: String,
+    timestamp: NaiveDateTime,
+}
+
+#[derive(Deserialize)]
+struct Token {
+    token: String,
+}
+
+
 fn main() {
+    use reqwest::header;
     let client = Client::builder()
         .timeout(Duration::from_secs(5))
         .build().unwrap();
@@ -42,8 +62,22 @@ fn main() {
     let srv = if let Some(s) = args.server {
         s 
     } else {
-        "http://localhost:8000".to_string()
+        "http://localhost:8000/api".to_string()
     };
+
+    let login = UserLogin{ user: "shanks".to_string(), timestamp: Utc::now().naive_utc()};
+    let log_resp = client.post("http://localhost:8000/login").json(&login).send().unwrap();
+    //println!("'{}'", log_resp.text().unwrap());
+    let token: Token = log_resp.json().unwrap();
+
+    let mut headers = header::HeaderMap::new();
+    headers.insert(header::AUTHORIZATION, header::HeaderValue::from_str(&format!("Bearer {}", &token.token)).unwrap());
+
+    let client = Client::builder()
+        .timeout(Duration::from_secs(5))
+        .default_headers(headers)
+        .build().unwrap();
+
     match args.cmd {
         Command::Open(new_issue) => {
             let id = ctt_client::issue_open(&client, &srv, new_issue).unwrap();

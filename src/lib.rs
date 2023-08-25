@@ -21,14 +21,6 @@ pub fn issue_open(client: &Client, srv: &str, new: create_issue::NewIssue) -> Re
 }
 
 pub fn issue_list(client: &Client, srv: &str, filter: list_issues::Variables) -> Result<Vec<list_issues::ListIssuesIssues>, ()> {
-    /*
-        let filter = list_issues::Variables {
-          status: Some("OPEN".to_string()),
-          target: None,
-      };
-      */
-
-
     let response_body =
         post_graphql::<queries::ListIssues, _>(&client, srv, filter).unwrap();
 
