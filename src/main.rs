@@ -80,12 +80,16 @@ fn main() {
 
     match args.cmd {
         Command::Open(new_issue) => {
-            let id = ctt_client::issue_open(&client, &srv, new_issue).unwrap();
-            println!("Opened issue {}", &id);
+            match ctt_client::issue_open(&client, &srv, new_issue) { 
+                Ok(id) => println!("Opened issue {}", &id),
+                Err(error) => println!("Error opening issue: {}", error),
+            }
         },
         Command::List(filter) => {
-            let issues = ctt_client::issue_list(&client, &srv, filter).unwrap();
-            print_issues(&issues);
+            match ctt_client::issue_list(&client, &srv, filter) {
+                Ok(issues) => print_issues(&issues),
+                Err(error) => println!("Error listing issues: {}", error),
+            }
         },
     };
 }

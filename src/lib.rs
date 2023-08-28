@@ -4,17 +4,13 @@ mod queries;
 pub use queries::{list_issues, create_issue};
 
 
-pub fn issue_open(client: &Client, srv: &str, new: create_issue::NewIssue) -> Result<i64, ()> {
+pub fn issue_open(client: &Client, srv: &str, new: create_issue::NewIssue) -> Result<i64, String> {
     
     let issue = create_issue::Variables { new_issue:new };
 
     let resp = post_graphql::<queries::CreateIssue, _>(&client, srv, issue).unwrap();
     if let Some(errors) = resp.errors {
-        println!("error:");
-        for error in &errors {
-            println!("{:?}", error);
-        }
-        return Err(())
+        return Err(format!("{}", errors[0].message))
     }
     let resp_data = resp.data.unwrap();
     Ok(resp_data.open.id)
