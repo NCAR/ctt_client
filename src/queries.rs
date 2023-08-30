@@ -1,4 +1,3 @@
-
 #[allow(clippy::all, warnings)]
 pub struct ListIssues;
 pub mod list_issues {
@@ -19,7 +18,7 @@ pub mod list_issues {
     #[derive(Clone, clap::ValueEnum)]
     pub enum IssueStatus {
         OPEN,
-        CLOSED
+        CLOSED,
     }
     impl ::serde::Serialize for IssueStatus {
         fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
