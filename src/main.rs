@@ -1,13 +1,13 @@
 use chrono::{NaiveDateTime, Utc};
-use std::fs::File;
-use std::io::Read;
 use clap::{Parser, Subcommand};
+use munge_auth;
 use prettytable::format::consts::FORMAT_CLEAN;
 use prettytable::{row, Table};
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::Read;
 use std::time::Duration;
-use munge_auth;
 
 use ctt_client::{create_issue, list_issues};
 
@@ -51,9 +51,8 @@ struct UserLogin {
 
 #[derive(Serialize)]
 enum AuthRequest {
-    Munge(String)
+    Munge(String),
 }
-
 
 #[derive(Deserialize)]
 struct Token {
@@ -62,7 +61,10 @@ struct Token {
 
 fn main() {
     let mut buf = Vec::new();
-    File::open("cert.pem").unwrap().read_to_end(&mut buf).unwrap();
+    File::open("cert.pem")
+        .unwrap()
+        .read_to_end(&mut buf)
+        .unwrap();
     let cert = reqwest::Certificate::from_pem(&buf).unwrap();
     use reqwest::header;
     let client = Client::builder()
@@ -81,7 +83,8 @@ fn main() {
         user: "shanks".to_string(),
         timestamp: Utc::now().naive_utc(),
     };
-    let auth = AuthRequest::Munge(munge_auth::munge(&serde_json::to_string(&login).unwrap()).unwrap());
+    let auth =
+        AuthRequest::Munge(munge_auth::munge(&serde_json::to_string(&login).unwrap()).unwrap());
 
     let log_resp = client
         .post("https://localhost:8000/login")
