@@ -1,5 +1,7 @@
 # ctt client
 
+## Running
+- make sure munge service is running
 
 ## Dev
 - schema.grahql is downloaded from the server (`/schema`)

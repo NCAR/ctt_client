@@ -8,6 +8,19 @@ query ListIssues($status: String, $target: String) {
     issueStatus
     target
     title
+  }
+}
+
+query GetIssue($id: Int) {
+  issue(issue: $id) {
+    assignedTo
+    description
+    downSiblings
+    enforceDown
+    id
+    issueStatus
+    target
+    title
     comments {
       author
       date
@@ -15,8 +28,13 @@ query ListIssues($status: String, $target: String) {
     }
   }
 }
+
 mutation CreateIssue($newIssue: NewIssue!) {
   open(issue: $newIssue) {
     id
   }
+}
+
+mutation CloseIssue($id: Int, $comment: String) {
+  close(issue: $id, comment: $comment)
 }
