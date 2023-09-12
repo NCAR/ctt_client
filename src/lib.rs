@@ -1,7 +1,7 @@
 use graphql_client::reqwest::post_graphql_blocking as post_graphql;
 use reqwest::blocking::Client;
 mod queries;
-pub use queries::{get_issue, close_issue, create_issue, list_issues};
+pub use queries::{get_issue, close_issue, create_issue, list_issues, update_issue};
 
 pub fn issue_open(client: &Client, srv: &str, new: create_issue::NewIssue) -> Result<i64, String> {
     let issue = create_issue::Variables { new_issue: new };
@@ -12,6 +12,13 @@ pub fn issue_open(client: &Client, srv: &str, new: create_issue::NewIssue) -> Re
     }
     let resp_data = resp.data.unwrap();
     Ok(resp_data.open.id)
+}
+
+pub fn issue_update(client: &Client, srv: &str, vars: update_issue::UpdateIssue) -> Result<update_issue::UpdateIssueUpdate, String> {
+    let issue = update_issue::Variables { issue: vars };
+    let resp_body = post_graphql::<queries::UpdateIssue, _>(&client, srv, issue).unwrap();
+    let data: update_issue::ResponseData = resp_body.data.expect("missing response data");
+    Ok(data.update)
 }
 
 pub fn issue_list(

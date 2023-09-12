@@ -38,3 +38,21 @@ mutation CreateIssue($newIssue: NewIssue!) {
 mutation CloseIssue($id: Int, $comment: String) {
   close(issue: $id, comment: $comment)
 }
+
+mutation UpdateIssue($issue: UpdateIssue!) {
+  update(issue: $issue) {
+    assignedTo
+    description
+    downSiblings
+    enforceDown
+    id
+    issueStatus
+    target
+    title
+    comments {
+      author
+      date
+      comment
+    }
+  }
+}

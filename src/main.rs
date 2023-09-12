@@ -9,7 +9,7 @@ use std::fs::File;
 use std::io::Read;
 use std::time::Duration;
 
-use ctt_client::{get_issue, create_issue, list_issues, close_issue};
+use ctt_client::{get_issue, create_issue, list_issues, close_issue, update_issue};
 
 #[derive(Parser)]
 #[command(name = "ctt")]
@@ -27,6 +27,7 @@ enum Command {
     Show(get_issue::Variables),
     Open(create_issue::NewIssue),
     Close(close_issue::Variables),
+    Update(update_issue::UpdateIssue),
 }
 
 #[derive(clap::Args)]
@@ -46,6 +47,23 @@ fn print_issues(issues: &Vec<list_issues::ListIssuesIssues>) {
 }
 
 fn print_issue(issue: &get_issue::GetIssueIssue) {
+    let mut table = Table::new();
+    table.set_format(*FORMAT_CLEAN);
+    table.set_titles(row!(b => "id", "target", "assignee", "title", "description", "siblings", "enforce"));
+
+    table.add_row(row!(issue.id, issue.target, issue.assigned_to, issue.title, issue.description, issue.down_siblings, issue.enforce_down));
+    table.printstd();
+
+    let mut table = Table::new();
+    table.set_format(*FORMAT_CLEAN);
+    table.set_titles(row!(b => "author", "date", "comment"));
+    for c in &issue.comments{
+        table.add_row(row!(c.author, c.date, c.comment));
+    }
+
+    table.printstd();
+}
+fn print_updateissue(issue: &update_issue::UpdateIssueUpdate) {
     let mut table = Table::new();
     table.set_format(*FORMAT_CLEAN);
     table.set_titles(row!(b => "id", "target", "assignee", "title", "description", "siblings", "enforce"));
@@ -112,7 +130,6 @@ fn main() {
         .send()
         .unwrap();
     let token: Token = log_resp.json().unwrap();
-    println!("Token: {}", &token.token);
 
     let mut headers = header::HeaderMap::new();
     headers.insert(
@@ -143,6 +160,10 @@ fn main() {
         Command::Show(vars) => match ctt_client::issue_show(&client, &srv, vars) {
             Ok(status) => print_issue(&status.expect("Issue not found")),
             Err(error) => println!("Error showing issue: {}", error),
+        },
+        Command::Update(vars) => match ctt_client::issue_update(&client, &srv, vars) {
+            Ok(status) => print_updateissue(&status),
+            Err(error) => println!("Error updating issue: {}", error),
         },
     };
 }
