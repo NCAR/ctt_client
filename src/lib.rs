@@ -14,10 +14,23 @@ pub fn issue_open(client: &Client, srv: &str, new: create_issue::NewIssue) -> Re
     Ok(resp_data.open.id)
 }
 
+pub fn issue_close(client: &Client, srv: &str, vars: close_issue::Variables) -> Result<String, String> {
+    let resp_body = post_graphql::<queries::CloseIssue, _>(&client, srv, vars).unwrap();
+    if let Some(errors) = resp_body.errors {
+        return Err(format!("{}", errors[0].message));
+    }
+    let data: close_issue::ResponseData =
+        resp_body.data.unwrap();
+    Ok(data.close)
+}
+
 pub fn issue_update(client: &Client, srv: &str, vars: update_issue::UpdateIssue) -> Result<update_issue::UpdateIssueUpdate, String> {
     let issue = update_issue::Variables { issue: vars };
     let resp_body = post_graphql::<queries::UpdateIssue, _>(&client, srv, issue).unwrap();
-    let data: update_issue::ResponseData = resp_body.data.expect("missing response data");
+    if let Some(errors) = resp_body.errors {
+        return Err(format!("{}", errors[0].message));
+    }
+    let data: update_issue::ResponseData = resp_body.data.unwrap();
     Ok(data.update)
 }
 
@@ -25,24 +38,23 @@ pub fn issue_list(
     client: &Client,
     srv: &str,
     filter: list_issues::Variables,
-) -> Result<Vec<list_issues::ListIssuesIssues>, ()> {
+) -> Result<Vec<list_issues::ListIssuesIssues>, String> {
     let response_body = post_graphql::<queries::ListIssues, _>(&client, srv, filter).unwrap();
+    if let Some(errors) = response_body.errors {
+        return Err(format!("{}", errors[0].message));
+    }
 
     let response_data: list_issues::ResponseData =
-        response_body.data.expect("missing response data");
+        response_body.data.unwrap();
     Ok(response_data.issues)
-}
-
-pub fn issue_close(client: &Client, srv: &str, vars: close_issue::Variables) -> Result<String, String> {
-    let resp_body = post_graphql::<queries::CloseIssue, _>(&client, srv, vars).unwrap();
-    let data: close_issue::ResponseData =
-        resp_body.data.expect("missing response data");
-    Ok(data.close)
 }
 
 pub fn issue_show(client: &Client, srv: &str, vars: get_issue::Variables) -> Result<Option<get_issue::GetIssueIssue>, String> {
     let resp_body = post_graphql::<queries::GetIssue, _>(&client, srv, vars).unwrap();
+    if let Some(errors) = resp_body.errors {
+        return Err(format!("{}", errors[0].message));
+    }
     let data: get_issue::ResponseData = 
-        resp_body.data.expect("missing response data");
+        resp_body.data.unwrap();
     Ok(data.issue)
 }

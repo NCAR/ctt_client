@@ -151,7 +151,7 @@ fn main() {
         },
         Command::List(filter) => match ctt_client::issue_list(&client, &srv, filter) {
             Ok(issues) => print_issues(&issues),
-            Err(()) => println!("Error listing issues"),
+            Err(error) => println!("Error listing issues: {}", error),
         },
         Command::Close(vars) => match ctt_client::issue_close(&client, &srv, vars) {
             Ok(status) => println!("{}", status),
