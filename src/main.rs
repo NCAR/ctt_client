@@ -1,6 +1,6 @@
 use chrono::{NaiveDateTime, Utc};
 use clap::{Parser, Subcommand};
-use munge_auth;
+
 use prettytable::format::consts::FORMAT_CLEAN;
 use prettytable::{row, Table};
 use reqwest::blocking::Client;
