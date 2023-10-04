@@ -1,0 +1,10 @@
+mutation ModifyIssue($issue: UpdateIssue!) {
+  updateIssue(issue: $issue){
+    title,
+    id,
+    assignedTo,
+    description,
+    toOffline,
+    enforceDown,
+  }
+}

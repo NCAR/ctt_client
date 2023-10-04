@@ -1,23 +1,25 @@
 
 type Comment {
-	author: String!
-	date: NaiveDateTime!
+	createdBy: String!
 	comment: String!
+	createdAt: NaiveDateTime!
 }
 
 
 
 
 type Issue {
-	assignedTo: String!
+	assignedTo: String
+	createdAt: NaiveDateTime!
+	createdBy: String!
 	description: String!
-	downSiblings: Boolean!
+	toOffline: ToOffline
 	enforceDown: Boolean!
 	id: Int!
 	issueStatus: IssueStatus!
-	target: String!
 	title: String!
 	comments: [Comment!]!
+	target: Target
 }
 
 enum IssueStatus {
@@ -28,9 +30,7 @@ enum IssueStatus {
 type Mutation {
 	open(issue: NewIssue!): Issue!
 	close(issue: Int!, comment: String!): String!
-	update(issue: UpdateIssue!): Issue!
-	drain(issue: Int!): String!
-	release(issue: Int!): String!
+	updateIssue(issue: UpdateIssue!): Issue!
 }
 
 """
@@ -45,7 +45,7 @@ scalar NaiveDateTime
 input NewIssue {
 	assignedTo: String
 	description: String!
-	downSiblings: Boolean
+	toOffline: ToOffline
 	enforceDown: Boolean
 	target: String!
 	title: String!
@@ -57,10 +57,30 @@ type Query {
 }
 
 
+type Target {
+	name: String!
+	status: TargetStatus!
+}
+
+enum TargetStatus {
+	ONLINE
+	DRAINING
+	OFFLINE
+	DOWN
+	UNKNOWN
+}
+
+enum ToOffline {
+	TARGET
+	SIBLINGS
+	COUSINS
+}
+
 input UpdateIssue {
 	assignedTo: String
 	description: String
 	enforceDown: Boolean
+	toOffline: ToOffline
 	id: Int!
 	title: String
 }
@@ -69,3 +89,4 @@ schema {
 	query: Query
 	mutation: Mutation
 }
+

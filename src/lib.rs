@@ -1,12 +1,12 @@
 use graphql_client::reqwest::post_graphql_blocking as post_graphql;
 use reqwest::blocking::Client;
-mod queries;
-pub use queries::{get_issue, close_issue, create_issue, list_issues, update_issue};
+pub mod queries;
+use queries::*;
 
-pub fn issue_open(client: &Client, srv: &str, new: create_issue::NewIssue) -> Result<i64, String> {
-    let issue = create_issue::Variables { new_issue: new };
+pub fn issue_open(client: &Client, srv: &str, new: open_issue::NewIssue) -> Result<i32, String> {
+    let issue = open_issue::Variables { new_issue: new };
 
-    let resp = post_graphql::<queries::CreateIssue, _>(client, srv, issue).unwrap();
+    let resp = post_graphql::<open_issue::OpenIssue, _>(client, srv, issue).unwrap();
     if let Some(errors) = resp.errors {
         return Err(errors[0].message.to_string());
     }
@@ -15,7 +15,7 @@ pub fn issue_open(client: &Client, srv: &str, new: create_issue::NewIssue) -> Re
 }
 
 pub fn issue_close(client: &Client, srv: &str, vars: close_issue::Variables) -> Result<String, String> {
-    let resp_body = post_graphql::<queries::CloseIssue, _>(client, srv, vars).unwrap();
+    let resp_body = post_graphql::<close_issue::CloseIssue, _>(client, srv, vars).unwrap();
     if let Some(errors) = resp_body.errors {
         return Err(errors[0].message.to_string());
     }
@@ -24,14 +24,14 @@ pub fn issue_close(client: &Client, srv: &str, vars: close_issue::Variables) -> 
     Ok(data.close)
 }
 
-pub fn issue_update(client: &Client, srv: &str, vars: update_issue::UpdateIssue) -> Result<update_issue::UpdateIssueUpdate, String> {
-    let issue = update_issue::Variables { issue: vars };
-    let resp_body = post_graphql::<queries::UpdateIssue, _>(client, srv, issue).unwrap();
+pub fn issue_update(client: &Client, srv: &str, vars: modify_issue::UpdateIssue) -> Result<modify_issue::ModifyIssueUpdateIssue, String> {
+    let issue = modify_issue::Variables { issue: vars };
+    let resp_body = post_graphql::<modify_issue::ModifyIssue, _>(client, srv, issue).unwrap();
     if let Some(errors) = resp_body.errors {
         return Err(errors[0].message.to_string());
     }
-    let data: update_issue::ResponseData = resp_body.data.unwrap();
-    Ok(data.update)
+    let data: modify_issue::ResponseData = resp_body.data.unwrap();
+    Ok(data.update_issue)
 }
 
 pub fn issue_list(
@@ -39,7 +39,7 @@ pub fn issue_list(
     srv: &str,
     filter: list_issues::Variables,
 ) -> Result<Vec<list_issues::ListIssuesIssues>, String> {
-    let response_body = post_graphql::<queries::ListIssues, _>(client, srv, filter).unwrap();
+    let response_body = post_graphql::<list_issues::ListIssues, _>(client, srv, filter).unwrap();
     if let Some(errors) = response_body.errors {
         return Err(errors[0].message.to_string());
     }
@@ -50,7 +50,7 @@ pub fn issue_list(
 }
 
 pub fn issue_show(client: &Client, srv: &str, vars: get_issue::Variables) -> Result<Option<get_issue::GetIssueIssue>, String> {
-    let resp_body = post_graphql::<queries::GetIssue, _>(client, srv, vars).unwrap();
+    let resp_body = post_graphql::<get_issue::GetIssue, _>(client, srv, vars).unwrap();
     if let Some(errors) = resp_body.errors {
         return Err(errors[0].message.to_string());
     }

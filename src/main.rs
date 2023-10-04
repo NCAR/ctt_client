@@ -9,7 +9,7 @@ use std::fs::File;
 use std::io::Read;
 use std::time::Duration;
 
-use ctt_client::{get_issue, create_issue, list_issues, close_issue, update_issue};
+use ctt_client::queries::*;
 
 #[derive(Parser)]
 #[command(name = "ctt")]
@@ -25,9 +25,9 @@ struct Cli {
 enum Command {
     List(list_issues::Variables),
     Show(get_issue::Variables),
-    Open(create_issue::NewIssue),
+    Open(open_issue::NewIssue),
     Close(close_issue::Variables),
-    Update(update_issue::UpdateIssue),
+    Update(modify_issue::UpdateIssue),
 }
 
 #[derive(clap::Args)]
@@ -41,7 +41,7 @@ fn print_issues(issues: &Vec<list_issues::ListIssuesIssues>) {
     table.set_titles(row!(b => "id", "target", "assignee", "title"));
 
     for issue in issues {
-        table.add_row(row!(issue.id, issue.target, issue.assigned_to, issue.title));
+        table.add_row(row!(issue.id, issue.target.as_ref().unwrap().name, issue.assigned_to.as_ref().unwrap_or(&"".to_string()).to_string(), issue.title));
     }
     table.printstd();
 }
@@ -49,26 +49,28 @@ fn print_issues(issues: &Vec<list_issues::ListIssuesIssues>) {
 fn print_issue(issue: &get_issue::GetIssueIssue) {
     let mut table = Table::new();
     table.set_format(*FORMAT_CLEAN);
-    table.set_titles(row!(b => "id", "target", "assignee", "title", "description", "siblings", "enforce"));
+    table.set_titles(row!(b => "id", "target", "assignee", "title", "description"));
+    table.add_row(row!(issue.id, issue.target.as_ref().unwrap().name, issue.assigned_to.as_ref().unwrap_or(&"".to_string()).to_string(), issue.title, issue.description));
 
-    table.add_row(row!(issue.id, issue.target, issue.assigned_to, issue.title, issue.description, issue.down_siblings, issue.enforce_down));
     table.printstd();
 
     let mut table = Table::new();
     table.set_format(*FORMAT_CLEAN);
     table.set_titles(row!(b => "author", "date", "comment"));
     for c in &issue.comments{
-        table.add_row(row!(c.author, c.date, c.comment));
+        table.add_row(row!(c.created_by, c.created_at, c.comment));
     }
 
     table.printstd();
 }
-fn print_updateissue(issue: &update_issue::UpdateIssueUpdate) {
+fn print_updateissue(issue: &modify_issue::ModifyIssueUpdateIssue) {
+    todo!();
+    /*
     let mut table = Table::new();
     table.set_format(*FORMAT_CLEAN);
-    table.set_titles(row!(b => "id", "target", "assignee", "title", "description", "siblings", "enforce"));
+    table.set_titles(row!(b => "id", "target", "assignee", "title", "description"));
+    table.add_row(row!(issue.id, issue.target.as_ref().unwrap().name, issue.assigned_to.as_ref().unwrap_or(&"".to_string()).to_string(), issue.title, issue.description));
 
-    table.add_row(row!(issue.id, issue.target, issue.assigned_to, issue.title, issue.description, issue.down_siblings, issue.enforce_down));
     table.printstd();
 
     let mut table = Table::new();
@@ -79,6 +81,7 @@ fn print_updateissue(issue: &update_issue::UpdateIssueUpdate) {
     }
 
     table.printstd();
+    */
 }
 
 #[derive(Serialize)]
@@ -107,6 +110,7 @@ fn main() {
     use reqwest::header;
     let client = Client::builder()
         .add_root_certificate(cert.clone())
+        .danger_accept_invalid_certs(true)
         .timeout(Duration::from_secs(5))
         .build()
         .unwrap();
@@ -114,7 +118,7 @@ fn main() {
     let srv = if let Some(s) = args.server {
         s
     } else {
-        "https://localhost:8000/api".to_string()
+        "https://127.0.0.1:8000/api".to_string()
     };
 
     let login = UserLogin {
@@ -125,7 +129,7 @@ fn main() {
         AuthRequest::Munge(munge_auth::munge(&serde_json::to_string(&login).unwrap()).unwrap());
 
     let log_resp = client
-        .post("https://localhost:8000/login")
+        .post("https://127.0.0.1:8000/login")
         .json(&auth)
         .send()
         .unwrap();
@@ -139,12 +143,14 @@ fn main() {
 
     let client = Client::builder()
         .add_root_certificate(cert)
+        .danger_accept_invalid_certs(true)
         .timeout(Duration::from_secs(5))
         .default_headers(headers)
         .build()
         .unwrap();
 
     match args.cmd {
+        
         Command::Open(new_issue) => match ctt_client::issue_open(&client, &srv, new_issue) {
             Ok(id) => println!("Opened issue {}", &id),
             Err(error) => println!("Error opening issue: {}", error),

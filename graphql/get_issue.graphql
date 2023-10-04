@@ -1,0 +1,15 @@
+query GetIssue($id: Int!){
+  issue(issue: $id){
+    assignedTo,
+    createdAt,
+    createdBy,
+    description,
+    toOffline,
+    enforceDown,
+    id,
+    issueStatus,
+    title,
+    comments{createdBy, comment, createdAt},
+    target{name, status}
+  }
+}

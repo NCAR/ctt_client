@@ -1,0 +1,3 @@
+mutation CloseIssue($id: Int!, $comment: String!) {
+  close(issue: $id, comment: $comment)
+}

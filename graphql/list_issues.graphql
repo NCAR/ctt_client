@@ -1,0 +1,10 @@
+query ListIssues($status: IssueStatus, $target: String) {
+  issues(issueStatus: $status, target: $target) {
+    id,
+    title,
+    assignedTo,
+    description,
+    toOffline,
+    target{name, status},
+  }
+}
