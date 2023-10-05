@@ -1,18 +1,24 @@
-use super::ToOffline;
+use super::*;
 use serde::{Deserialize, Serialize};
+
 pub struct ModifyIssue;
 pub const OPERATION_NAME: &str = "ModifyIssue";
 pub const QUERY : & str = "mutation ModifyIssue($issue: UpdateIssue!) {\n  updateIssue(issue: $issue){\n    title,\n    id,\n    assignedTo,\n    description,\n    toOffline,\n    enforceDown,\n  }\n}\n" ;
 #[derive(Serialize, clap::Args)]
 pub struct UpdateIssue {
+    pub id: i32,
     #[serde(rename = "assignedTo")]
+    #[arg(short, long)]
     pub assigned_to: Option<String>,
+    #[arg(short, long)]
     pub description: Option<String>,
     #[serde(rename = "enforceDown")]
+    #[arg(short, long)]
     pub enforce_down: Option<bool>,
     #[serde(rename = "toOffline")]
+    #[arg(long)]
     pub to_offline: Option<ToOffline>,
-    pub id: i32,
+    #[arg(short, long)]
     pub title: Option<String>,
 }
 #[derive(Serialize)]

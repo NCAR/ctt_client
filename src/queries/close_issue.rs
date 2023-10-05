@@ -1,7 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 pub struct CloseIssue;
 pub const OPERATION_NAME: &str = "CloseIssue";
 pub const QUERY : & str = "mutation CloseIssue($id: Int!, $comment: String!) {\n  close(issue: $id, comment: $comment)\n}\n" ;
-use serde::{Deserialize, Serialize};
 #[derive(Serialize, clap::Args)]
 pub struct Variables {
     pub id: i32,

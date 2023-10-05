@@ -1,52 +1,23 @@
-use super::ToOffline;
+use super::{TargetStatus, ToOffline};
+use serde::{Deserialize, Serialize};
+
 pub struct OpenIssue;
 pub const OPERATION_NAME: &str = "OpenIssue";
 pub const QUERY : & str = "mutation OpenIssue($newIssue: NewIssue!) {\n  open(issue: $newIssue) {\n    id,\n    target{name,status}\n  }\n}\n" ;
-use serde::{Deserialize, Serialize};
-pub enum TargetStatus {
-    ONLINE,
-    DRAINING,
-    OFFLINE,
-    DOWN,
-    UNKNOWN,
-    Other(String),
-}
-impl ::serde::Serialize for TargetStatus {
-    fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
-        ser.serialize_str(match *self {
-            TargetStatus::ONLINE => "ONLINE",
-            TargetStatus::DRAINING => "DRAINING",
-            TargetStatus::OFFLINE => "OFFLINE",
-            TargetStatus::DOWN => "DOWN",
-            TargetStatus::UNKNOWN => "UNKNOWN",
-            TargetStatus::Other(ref s) => s,
-        })
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for TargetStatus {
-    fn deserialize<D: ::serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let s: String = ::serde::Deserialize::deserialize(deserializer)?;
-        match s.as_str() {
-            "ONLINE" => Ok(TargetStatus::ONLINE),
-            "DRAINING" => Ok(TargetStatus::DRAINING),
-            "OFFLINE" => Ok(TargetStatus::OFFLINE),
-            "DOWN" => Ok(TargetStatus::DOWN),
-            "UNKNOWN" => Ok(TargetStatus::UNKNOWN),
-            _ => Ok(TargetStatus::Other(s)),
-        }
-    }
-}
 #[derive(Serialize, clap::Args)]
 pub struct NewIssue {
-    #[serde(rename = "assignedTo")]
-    pub assigned_to: Option<String>,
-    pub description: String,
-    #[serde(rename = "toOffline")]
-    pub to_offline: Option<ToOffline>,
-    #[serde(rename = "enforceDown")]
-    pub enforce_down: Option<bool>,
     pub target: String,
     pub title: String,
+    pub description: String,
+    #[serde(rename = "toOffline")]
+    #[arg(short, long, value_enum, default_value_t=ToOffline::TARGET)]
+    pub to_offline: ToOffline,
+    #[serde(rename = "enforceDown")]
+    #[arg(short, long, default_value_t = false)]
+    pub enforce_down: bool,
+    #[serde(rename = "assignedTo")]
+    #[arg(short, long)]
+    pub assigned_to: Option<String>,
 }
 #[derive(Serialize)]
 pub struct Variables {

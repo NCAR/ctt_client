@@ -1,15 +1,15 @@
 use chrono::{NaiveDateTime, Utc};
 use clap::{Parser, Subcommand};
 
-use prettytable::format::consts::FORMAT_CLEAN;
-use prettytable::{row, Table};
+use comfy_table::modifiers::UTF8_ROUND_CORNERS;
+use comfy_table::presets::UTF8_FULL;
+use comfy_table::{Cell, Color, Table};
+use ctt_client::queries::*;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 use std::time::Duration;
-
-use ctt_client::queries::*;
 
 #[derive(Parser)]
 #[command(name = "ctt")]
@@ -35,53 +35,97 @@ struct Credentials {
     user: String,
 }
 
-fn print_issues(issues: &Vec<list_issues::ListIssuesIssues>) {
+fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
     let mut table = Table::new();
-    table.set_format(*FORMAT_CLEAN);
-    table.set_titles(row!(b => "id", "target", "assignee", "title"));
+    //table.set_format(*FORMAT_CLEAN);
+    table
+        .load_preset(UTF8_FULL)
+        .apply_modifier(UTF8_ROUND_CORNERS)
+        .set_header(vec!["id", "target", "assignee", "title"]);
 
-    for issue in issues {
-        table.add_row(row!(issue.id, issue.target.as_ref().unwrap().name, issue.assigned_to.as_ref().unwrap_or(&"".to_string()).to_string(), issue.title));
-    }
-    table.printstd();
+    issues.into_iter().for_each(|issue| {
+        let mut target = Cell::new(issue.target.as_ref().unwrap().name.clone());
+        target = match issue.target.unwrap().status {
+            TargetStatus::OFFLINE => target.fg(Color::Green),
+            TargetStatus::DRAINING => target.fg(Color::Yellow),
+            TargetStatus::ONLINE => target.fg(Color::Red),
+            _ => target,
+        };
+        table.add_row(vec![
+            Cell::new(issue.id.to_string()),
+            target,
+            Cell::new(
+                issue
+                    .assigned_to
+                    .as_ref()
+                    .unwrap_or(&"".to_string())
+                    .to_string(),
+            ),
+            Cell::new(issue.title),
+        ]);
+    });
+    println!("{table}");
 }
 
-fn print_issue(issue: &get_issue::GetIssueIssue) {
+fn print_issue(issue: get_issue::GetIssueIssue) {
     let mut table = Table::new();
-    table.set_format(*FORMAT_CLEAN);
-    table.set_titles(row!(b => "id", "target", "assignee", "title", "description"));
-    table.add_row(row!(issue.id, issue.target.as_ref().unwrap().name, issue.assigned_to.as_ref().unwrap_or(&"".to_string()).to_string(), issue.title, issue.description));
+    let mut target = Cell::new(issue.target.as_ref().unwrap().name.clone());
+    target = match issue.target.unwrap().status {
+        TargetStatus::OFFLINE => target.fg(Color::Green),
+        TargetStatus::DRAINING => target.fg(Color::Yellow),
+        TargetStatus::ONLINE => target.fg(Color::Red),
+        _ => target,
+    };
+    let offline = if let Some(o) = issue.to_offline {
+        Cell::new(o.to_string())
+    } else {
+        Cell::new("NONE".to_string()).fg(Color::Red)
+    };
+    table
+        .load_preset(UTF8_FULL)
+        .apply_modifier(UTF8_ROUND_CORNERS)
+        .set_header(vec![
+            "status",
+            "target",
+            "assignee",
+            "title",
+            "description",
+            "to_offline",
+            "enforce",
+        ]);
+    table.add_row(vec![
+        Cell::new(issue.issue_status.to_string()),
+        target,
+        Cell::new(
+            issue
+                .assigned_to
+                .as_ref()
+                .unwrap_or(&"".to_string())
+                .to_string(),
+        ),
+        Cell::new(issue.title),
+        Cell::new(issue.description),
+        offline,
+        Cell::new(issue.enforce_down),
+    ]);
 
-    table.printstd();
+    println!("{table}");
 
     let mut table = Table::new();
-    table.set_format(*FORMAT_CLEAN);
-    table.set_titles(row!(b => "author", "date", "comment"));
-    for c in &issue.comments{
-        table.add_row(row!(c.created_by, c.created_at, c.comment));
-    }
+    //table.set_format(*FORMAT_CLEAN);
+    table
+        .load_preset(UTF8_FULL)
+        .apply_modifier(UTF8_ROUND_CORNERS)
+        .set_header(vec!["author", "date", "comment"]);
+    issue.comments.into_iter().for_each(|c| {
+        table.add_row(vec![
+            c.created_by.clone(),
+            c.created_at.to_string(),
+            c.comment.clone(),
+        ]);
+    });
 
-    table.printstd();
-}
-fn print_updateissue(issue: &modify_issue::ModifyIssueUpdateIssue) {
-    todo!();
-    /*
-    let mut table = Table::new();
-    table.set_format(*FORMAT_CLEAN);
-    table.set_titles(row!(b => "id", "target", "assignee", "title", "description"));
-    table.add_row(row!(issue.id, issue.target.as_ref().unwrap().name, issue.assigned_to.as_ref().unwrap_or(&"".to_string()).to_string(), issue.title, issue.description));
-
-    table.printstd();
-
-    let mut table = Table::new();
-    table.set_format(*FORMAT_CLEAN);
-    table.set_titles(row!(b => "author", "date", "comment"));
-    for c in &issue.comments{
-        table.add_row(row!(c.author, c.date, c.comment));
-    }
-
-    table.printstd();
-    */
+    println!("{table}");
 }
 
 #[derive(Serialize)]
@@ -150,13 +194,12 @@ fn main() {
         .unwrap();
 
     match args.cmd {
-        
         Command::Open(new_issue) => match ctt_client::issue_open(&client, &srv, new_issue) {
             Ok(id) => println!("Opened issue {}", &id),
             Err(error) => println!("Error opening issue: {}", error),
         },
         Command::List(filter) => match ctt_client::issue_list(&client, &srv, filter) {
-            Ok(issues) => print_issues(&issues),
+            Ok(issues) => print_issues(issues),
             Err(error) => println!("Error listing issues: {}", error),
         },
         Command::Close(vars) => match ctt_client::issue_close(&client, &srv, vars) {
@@ -164,11 +207,11 @@ fn main() {
             Err(error) => println!("Error opening issue: {}", error),
         },
         Command::Show(vars) => match ctt_client::issue_show(&client, &srv, vars) {
-            Ok(status) => print_issue(&status.expect("Issue not found")),
+            Ok(status) => print_issue(status.expect("Issue not found")),
             Err(error) => println!("Error showing issue: {}", error),
         },
         Command::Update(vars) => match ctt_client::issue_update(&client, &srv, vars) {
-            Ok(status) => print_updateissue(&status),
+            Ok(_) => (),
             Err(error) => println!("Error updating issue: {}", error),
         },
     };
