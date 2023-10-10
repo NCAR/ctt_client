@@ -4,7 +4,7 @@ pub mod list_issues;
 pub mod modify_issue;
 pub mod open_issue;
 
-#[derive(Clone, clap::ValueEnum)]
+#[derive(Clone, clap::ValueEnum, Debug)]
 pub enum ToOffline {
     TARGET,
     SIBLINGS,

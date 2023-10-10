@@ -207,11 +207,12 @@ fn main() {
             Err(error) => println!("Error opening issue: {}", error),
         },
         Command::Show(vars) => match ctt_client::issue_show(&client, &srv, vars) {
-            Ok(status) => print_issue(status.expect("Issue not found")),
+            Ok(Some(status)) => print_issue(status),
+            Ok(None) => println!("Issue not found"),
             Err(error) => println!("Error showing issue: {}", error),
         },
         Command::Update(vars) => match ctt_client::issue_update(&client, &srv, vars) {
-            Ok(_) => (),
+            Ok(status) => print_issue(status),
             Err(error) => println!("Error updating issue: {}", error),
         },
     };

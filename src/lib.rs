@@ -27,20 +27,6 @@ pub fn issue_close(
     Ok(data.close)
 }
 
-pub fn issue_update(
-    client: &Client,
-    srv: &str,
-    vars: modify_issue::UpdateIssue,
-) -> Result<modify_issue::ModifyIssueUpdateIssue, String> {
-    let issue = modify_issue::Variables { issue: vars };
-    let resp_body = post_graphql::<modify_issue::ModifyIssue, _>(client, srv, issue).unwrap();
-    if let Some(errors) = resp_body.errors {
-        return Err(errors[0].message.to_string());
-    }
-    let data: modify_issue::ResponseData = resp_body.data.unwrap();
-    Ok(data.update_issue)
-}
-
 pub fn issue_list(
     client: &Client,
     srv: &str,
@@ -66,4 +52,18 @@ pub fn issue_show(
     }
     let data: get_issue::ResponseData = resp_body.data.unwrap();
     Ok(data.issue)
+}
+
+pub fn issue_update(
+    client: &Client,
+    srv: &str,
+    vars: modify_issue::UpdateIssue,
+) -> Result<get_issue::GetIssueIssue, String> {
+    let issue = modify_issue::Variables { issue: vars };
+    let resp_body = post_graphql::<modify_issue::ModifyIssue, _>(client, srv, issue).unwrap();
+    if let Some(errors) = resp_body.errors {
+        return Err(errors[0].message.to_string());
+    }
+    let data: modify_issue::ResponseData = resp_body.data.unwrap();
+    Ok(data.update_issue)
 }
