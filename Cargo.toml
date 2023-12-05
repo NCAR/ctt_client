@@ -14,7 +14,14 @@ chrono = {version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
 comfy-table = "7"
 graphql_client = { version = "0.13", features = ["reqwest-blocking"] }
-munge_auth = { path= "../munge" }
+munge_auth = "0.1"
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 serde = "1"
 serde_json = "1"
+
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/ctt_client", dest = "/opt/ncar/bin/pbs_client", mode = "755" },
+]
+
