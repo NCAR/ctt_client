@@ -6,25 +6,25 @@ pub mod open_issue;
 
 #[derive(Clone, clap::ValueEnum, Debug)]
 pub enum ToOffline {
-    TARGET,
-    SIBLINGS,
-    COUSINS,
+    Node,
+    Card,
+    Blade,
 }
 impl ToString for ToOffline {
     fn to_string(&self) -> String {
         match self {
-            ToOffline::TARGET => "Target".to_string(),
-            ToOffline::SIBLINGS => "Siblings".to_string(),
-            ToOffline::COUSINS => "Cousins".to_string(),
+            ToOffline::Node => "Node".to_string(),
+            ToOffline::Card => "Card".to_string(),
+            ToOffline::Blade => "Blade".to_string(),
         }
     }
 }
 impl ::serde::Serialize for ToOffline {
     fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
         ser.serialize_str(match *self {
-            ToOffline::TARGET => "TARGET",
-            ToOffline::SIBLINGS => "SIBLINGS",
-            ToOffline::COUSINS => "COUSINS",
+            ToOffline::Node => "NODE",
+            ToOffline::Card => "CARD",
+            ToOffline::Blade => "BLADE",
         })
     }
 }
@@ -32,9 +32,9 @@ impl<'de> ::serde::Deserialize<'de> for ToOffline {
     fn deserialize<D: ::serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let s: String = ::serde::Deserialize::deserialize(deserializer)?;
         match s.as_str() {
-            "TARGET" => Ok(ToOffline::TARGET),
-            "SIBLINGS" => Ok(ToOffline::SIBLINGS),
-            "COUSINS" => Ok(ToOffline::COUSINS),
+            "NODE" => Ok(ToOffline::Node),
+            "CARD" => Ok(ToOffline::Card),
+            "BLADE" => Ok(ToOffline::Blade),
             _ => panic!("Can't deserialize {}", s),
         }
     }
@@ -46,7 +46,6 @@ pub enum TargetStatus {
     DRAINING,
     OFFLINE,
     DOWN,
-    UNKNOWN,
 }
 impl ::serde::Serialize for TargetStatus {
     fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
@@ -55,7 +54,6 @@ impl ::serde::Serialize for TargetStatus {
             TargetStatus::DRAINING => "DRAINING",
             TargetStatus::OFFLINE => "OFFLINE",
             TargetStatus::DOWN => "DOWN",
-            TargetStatus::UNKNOWN => "UNKNOWN",
         })
     }
 }
@@ -67,7 +65,6 @@ impl<'de> ::serde::Deserialize<'de> for TargetStatus {
             "DRAINING" => Ok(TargetStatus::DRAINING),
             "OFFLINE" => Ok(TargetStatus::OFFLINE),
             "DOWN" => Ok(TargetStatus::DOWN),
-            "UNKNOWN" => Ok(TargetStatus::UNKNOWN),
             _ => panic!("Can't deserialize {}", s),
         }
     }

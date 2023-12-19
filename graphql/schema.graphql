@@ -14,9 +14,8 @@ type Issue {
 	createdBy: String!
 	description: String!
 	toOffline: ToOffline
-	enforceDown: Boolean!
 	id: Int!
-	issueStatus: IssueStatus!
+	status: IssueStatus!
 	title: String!
 	comments: [Comment!]!
 	target: Target
@@ -46,14 +45,13 @@ input NewIssue {
 	assignedTo: String
 	description: String!
 	toOffline: ToOffline
-	enforceDown: Boolean
 	target: String!
 	title: String!
 }
 
 type Query {
 	issue(issue: Int!): Issue
-	issues(issueStatus: IssueStatus, target: String): [Issue!]!
+	issues(status: IssueStatus, target: String): [Issue!]!
 }
 
 
@@ -79,7 +77,6 @@ enum ToOffline {
 input UpdateIssue {
 	assignedTo: String
 	description: String
-	enforceDown: Boolean
 	toOffline: ToOffline
 	id: Int!
 	title: String

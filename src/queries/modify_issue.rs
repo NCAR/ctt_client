@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 pub struct ModifyIssue;
 pub const OPERATION_NAME: &str = "ModifyIssue";
-pub const QUERY : & str = "mutation ModifyIssue($issue: UpdateIssue!) {\n  updateIssue(issue: $issue){\n    assignedTo,\n    createdAt,\n    createdBy,\n    description,\n    toOffline,\n    enforceDown,\n    id,\n    issueStatus,\n    title,\n    comments{createdBy, comment, createdAt},\n    target{name, status}\n  }\n}" ;
+pub const QUERY : & str = "mutation ModifyIssue($issue: UpdateIssue!) {\n  updateIssue(issue: $issue){\n    assignedTo,\n    createdAt,\n    createdBy,\n    description,\n    toOffline,\n    id,\n    status,\n    title,\n    comments{createdBy, comment, createdAt},\n    target{name, status}\n  }\n}" ;
 #[derive(Serialize, clap::Args, Debug)]
 pub struct UpdateIssue {
     pub id: i32,
@@ -12,9 +12,6 @@ pub struct UpdateIssue {
     pub assigned_to: Option<String>,
     #[arg(short, long)]
     pub description: Option<String>,
-    #[serde(rename = "enforceDown")]
-    #[arg(short, long)]
-    pub enforce_down: Option<bool>,
     #[serde(rename = "toOffline")]
     #[arg(long)]
     pub to_offline: Option<ToOffline>,
@@ -39,8 +36,6 @@ pub struct ModifyIssueUpdateIssue {
     pub description: String,
     #[serde(rename = "toOffline")]
     pub to_offline: Option<ToOffline>,
-    #[serde(rename = "enforceDown")]
-    pub enforce_down: bool,
 }
 impl graphql_client::GraphQLQuery for ModifyIssue {
     type Variables = Variables;

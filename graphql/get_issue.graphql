@@ -5,9 +5,8 @@ query GetIssue($id: Int!){
     createdBy,
     description,
     toOffline,
-    enforceDown,
     id,
-    issueStatus,
+    status,
     title,
     comments{createdBy, comment, createdAt},
     target{name, status}

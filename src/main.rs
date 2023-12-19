@@ -48,8 +48,8 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
         target = match issue.target.unwrap().status {
             TargetStatus::OFFLINE => target.fg(Color::Green),
             TargetStatus::DRAINING => target.fg(Color::Yellow),
-            TargetStatus::ONLINE => target.fg(Color::Red),
-            _ => target,
+            TargetStatus::ONLINE => target.fg(Color::DarkRed),
+            TargetStatus::DOWN => target.fg(Color::Red),
         };
         table.add_row(vec![
             Cell::new(issue.id.to_string()),
@@ -91,7 +91,6 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
             "title",
             "description",
             "to_offline",
-            "enforce",
         ]);
     table.add_row(vec![
         Cell::new(issue.issue_status.to_string()),
@@ -106,7 +105,6 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
         Cell::new(issue.title),
         Cell::new(issue.description),
         offline,
-        Cell::new(issue.enforce_down),
     ]);
 
     println!("{table}");

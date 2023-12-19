@@ -10,11 +10,8 @@ pub struct NewIssue {
     pub title: String,
     pub description: String,
     #[serde(rename = "toOffline")]
-    #[arg(short, long, value_enum, default_value_t=ToOffline::TARGET)]
+    #[arg(short, long, value_enum, default_value_t=ToOffline::Node)]
     pub to_offline: ToOffline,
-    #[serde(rename = "enforceDown")]
-    #[arg(short, long, default_value_t = false)]
-    pub enforce_down: bool,
     #[serde(rename = "assignedTo")]
     #[arg(short, long)]
     pub assigned_to: Option<String>,

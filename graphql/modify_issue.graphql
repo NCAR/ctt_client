@@ -5,6 +5,5 @@ mutation ModifyIssue($issue: UpdateIssue!) {
     assignedTo,
     description,
     toOffline,
-    enforceDown,
   }
 }
