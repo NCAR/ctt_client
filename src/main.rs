@@ -160,7 +160,7 @@ fn main() {
     let srv = if let Some(s) = args.server {
         s
     } else {
-        "https://127.0.0.1:8000/api".to_string()
+        "https://10.13.0.16:8000/api".to_string()
     };
 
     let login = UserLogin {
@@ -171,7 +171,7 @@ fn main() {
         AuthRequest::Munge(munge_auth::munge(&serde_json::to_string(&login).unwrap()).unwrap());
 
     let log_resp = client
-        .post("https://127.0.0.1:8000/login")
+        .post("https://10.13.0.16:8000/login")
         .json(&auth)
         .send()
         .unwrap();
