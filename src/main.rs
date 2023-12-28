@@ -44,7 +44,7 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
         .set_header(vec![
             "id",
             "target",
-            "status",
+            "target status",
             "assignee",
             "title",
             "ToOffline",
@@ -101,20 +101,35 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
     } else {
         Cell::new("NONE".to_string()).fg(Color::Red)
     };
+    let min_status = issue
+        .related
+        .iter()
+        .map(|t| t.status.clone())
+        .min()
+        .unwrap();
+    let status = Cell::new(min_status.to_string());
+    let status = match min_status {
+        TargetStatus::OFFLINE => status.fg(Color::Green),
+        TargetStatus::DRAINING => status.fg(Color::Yellow),
+        TargetStatus::ONLINE => status.fg(Color::Red),
+        TargetStatus::DOWN => status,
+    };
     table
         .load_preset(UTF8_FULL)
         .apply_modifier(UTF8_ROUND_CORNERS)
         .set_header(vec![
             "status",
             "target",
+            "target status",
             "assignee",
             "title",
             "description",
-            "to_offline",
+            "toOffline",
         ]);
     table.add_row(vec![
         Cell::new(issue.issue_status.to_string()),
         target,
+        status,
         Cell::new(
             issue
                 .assigned_to

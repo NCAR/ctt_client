@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 pub struct ModifyIssue;
 pub const OPERATION_NAME: &str = "ModifyIssue";
-pub const QUERY : & str = "mutation ModifyIssue($issue: UpdateIssue!) {\n  updateIssue(issue: $issue){\n    assignedTo,\n    createdAt,\n    createdBy,\n    description,\n    toOffline,\n    id,\n    status,\n    title,\n    comments{createdBy, comment, createdAt},\n    target{name, status}\n  }\n}" ;
+pub const QUERY : & str = "mutation ModifyIssue($issue: UpdateIssue!) {\n  updateIssue(issue: $issue){\n    assignedTo,\n    createdAt,\n    createdBy,\n    description,\n    toOffline,\n    id,\n    status,\n    title,\n    comments{createdBy, comment, createdAt},\n    target{name, status},\n related{name, status}  }\n}" ;
 #[derive(Serialize, clap::Args, Debug)]
 pub struct UpdateIssue {
     pub id: i32,
