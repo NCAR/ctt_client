@@ -179,7 +179,7 @@ struct Token {
 
 fn main() {
     let mut buf = Vec::new();
-    File::open("cert.pem")
+    File::open("/glade/work/shanks/ctt/ctt_client/cert.pem")
         .unwrap()
         .read_to_end(&mut buf)
         .unwrap();
@@ -199,7 +199,10 @@ fn main() {
     };
 
     let login = UserLogin {
-        user: "shanks".to_string(),
+        user: users::get_current_username()
+            .unwrap()
+            .into_string()
+            .unwrap(),
         timestamp: Utc::now().naive_utc(),
     };
     let auth =
