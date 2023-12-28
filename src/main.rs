@@ -41,19 +41,34 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
     table
         .load_preset(UTF8_FULL)
         .apply_modifier(UTF8_ROUND_CORNERS)
-        .set_header(vec!["id", "target", "assignee", "title"]);
+        .set_header(vec![
+            "id",
+            "target",
+            "status",
+            "assignee",
+            "title",
+            "ToOffline",
+        ]);
 
     issues.into_iter().for_each(|issue| {
-        let mut target = Cell::new(issue.target.as_ref().unwrap().name.clone());
-        target = match issue.target.unwrap().status {
-            TargetStatus::OFFLINE => target.fg(Color::Green),
-            TargetStatus::DRAINING => target.fg(Color::Yellow),
-            TargetStatus::ONLINE => target.fg(Color::DarkRed),
-            TargetStatus::DOWN => target.fg(Color::Red),
+        let target = Cell::new(issue.target.as_ref().unwrap().name.clone());
+        let min_status = issue
+            .related
+            .iter()
+            .map(|t| t.status.clone())
+            .min()
+            .unwrap();
+        let status = Cell::new(min_status.to_string());
+        let status = match min_status {
+            TargetStatus::OFFLINE => status.fg(Color::Green),
+            TargetStatus::DRAINING => status.fg(Color::Yellow),
+            TargetStatus::ONLINE => status.fg(Color::Red),
+            TargetStatus::DOWN => status,
         };
         table.add_row(vec![
             Cell::new(issue.id.to_string()),
             target,
+            status,
             Cell::new(
                 issue
                     .assigned_to
@@ -62,6 +77,11 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
                     .to_string(),
             ),
             Cell::new(issue.title),
+            if let Some(group) = issue.to_offline {
+                Cell::new(group.to_string())
+            } else {
+                Cell::new("".to_string())
+            },
         ]);
     });
     println!("{table}");

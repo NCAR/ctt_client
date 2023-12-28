@@ -40,12 +40,23 @@ impl<'de> ::serde::Deserialize<'de> for ToOffline {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, PartialOrd, Ord, Eq, Clone)]
 pub enum TargetStatus {
-    ONLINE,
-    DRAINING,
-    OFFLINE,
-    DOWN,
+    ONLINE = 1,
+    DRAINING = 2,
+    DOWN = 3,
+    OFFLINE = 4,
+}
+impl ToString for TargetStatus {
+    // Required method
+    fn to_string(&self) -> String {
+        match &self {
+            TargetStatus::DOWN => "Down".to_string(),
+            TargetStatus::ONLINE => "Online".to_string(),
+            TargetStatus::OFFLINE => "Offline".to_string(),
+            TargetStatus::DRAINING => "Draining".to_string(),
+        }
+    }
 }
 impl ::serde::Serialize for TargetStatus {
     fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 pub struct ListIssues;
 pub const OPERATION_NAME: &str = "ListIssues";
-pub const QUERY : & str = "query ListIssues($status: IssueStatus, $target: String) {\n  issues(issueStatus: $status, target: $target) {\n    id,\n    title,\n    assignedTo,\n    description,\n    toOffline,\n    target{name, status},\n  }\n}\n" ;
+pub const QUERY : & str = "query ListIssues($status: IssueStatus, $target: String) {\n  issues(issueStatus: $status, target: $target) {\n    id,\n    title,\n    assignedTo,\n    description,\n    toOffline,\n    target{name, status},\n    related{name,status},\n  }\n}\n" ;
 #[derive(Serialize, clap::Args)]
 pub struct Variables {
     #[arg(short, long, value_enum, default_value_t=IssueStatus::OPEN)]
@@ -26,6 +26,7 @@ pub struct ListIssuesIssues {
     #[serde(rename = "toOffline")]
     pub to_offline: Option<ToOffline>,
     pub target: Option<ListIssuesIssuesTarget>,
+    pub related: Vec<ListIssuesIssuesTarget>,
 }
 #[derive(Deserialize)]
 pub struct ListIssuesIssuesTarget {
