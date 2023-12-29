@@ -3,7 +3,7 @@ use clap::{Parser, Subcommand};
 
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::presets::UTF8_FULL;
-use comfy_table::{Cell, Color, Table};
+use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
 use ctt_client::queries::*;
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
@@ -41,6 +41,7 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
     table
         .load_preset(UTF8_FULL)
         .apply_modifier(UTF8_ROUND_CORNERS)
+        .set_content_arrangement(ContentArrangement::Dynamic)
         .set_header(vec![
             "id",
             "target",
@@ -65,30 +66,32 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
             TargetStatus::ONLINE => status.fg(Color::Red),
             TargetStatus::DOWN => status,
         };
-        table.add_row(vec![
-            Cell::new(issue.id.to_string()),
-            target,
-            status,
-            Cell::new(
-                issue
-                    .assigned_to
-                    .as_ref()
-                    .unwrap_or(&"".to_string())
-                    .to_string(),
-            ),
-            Cell::new(issue.title),
-            if let Some(group) = issue.to_offline {
-                Cell::new(group.to_string())
-            } else {
-                Cell::new("".to_string())
-            },
-        ]);
+        let mut row = Row::new();
+        row.add_cell(Cell::new(issue.id.to_string()));
+        row.add_cell(target);
+        row.add_cell(status);
+        row.add_cell(Cell::new(
+            issue
+                .assigned_to
+                .as_ref()
+                .unwrap_or(&"".to_string())
+                .to_string(),
+        ));
+        row.add_cell(Cell::new(issue.title));
+        row.add_cell(if let Some(group) = issue.to_offline {
+            Cell::new(group.to_string())
+        } else {
+            Cell::new("".to_string())
+        });
+        row.max_height(3);
+        table.add_row(row);
     });
     println!("{table}");
 }
 
 fn print_issue(issue: get_issue::GetIssueIssue) {
     let mut table = Table::new();
+    table.set_content_arrangement(ContentArrangement::Dynamic);
     let mut target = Cell::new(issue.target.as_ref().unwrap().name.clone());
     target = match issue.target.unwrap().status {
         TargetStatus::OFFLINE => target.fg(Color::Green),
@@ -148,6 +151,7 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
     //table.set_format(*FORMAT_CLEAN);
     table
         .load_preset(UTF8_FULL)
+        .set_content_arrangement(ContentArrangement::Dynamic)
         .apply_modifier(UTF8_ROUND_CORNERS)
         .set_header(vec!["author", "date", "comment"]);
     issue.comments.into_iter().for_each(|c| {
