@@ -1,13 +1,9 @@
-use serde::{Deserialize, Serialize};
+pub use crate::cli::CloseVariables as Variables;
+use serde::Deserialize;
 
 pub struct CloseIssue;
 pub const OPERATION_NAME: &str = "CloseIssue";
 pub const QUERY : & str = "mutation CloseIssue($id: Int!, $comment: String!) {\n  close(issue: $id, comment: $comment)\n}\n" ;
-#[derive(Serialize, clap::Args)]
-pub struct Variables {
-    pub id: i32,
-    pub comment: String,
-}
 #[derive(Deserialize)]
 pub struct ResponseData {
     pub close: String,

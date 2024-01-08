@@ -1,14 +1,12 @@
 use super::*;
+pub use crate::cli::GetVariables as Variables;
+use crate::cli::IssueStatus;
 use chrono::NaiveDateTime;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 pub struct GetIssue;
 pub const OPERATION_NAME: &str = "GetIssue";
 pub const QUERY : & str = "query GetIssue($id: Int!){\n  issue(issue: $id){\n    assignedTo,\n    createdAt,\n    createdBy,\n    description,\n    toOffline,\n    id,\n    status,\n    title,\n    comments{createdBy, comment, createdAt},\n    target{name, status},\n    related{name, status}\n  }\n}\n" ;
-#[derive(Serialize, clap::Args)]
-pub struct Variables {
-    pub id: i32,
-}
 #[derive(Deserialize)]
 pub struct ResponseData {
     pub issue: Option<GetIssueIssue>,

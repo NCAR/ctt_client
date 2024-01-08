@@ -1,54 +1,28 @@
-use chrono::{NaiveDateTime, Utc};
-use clap::{Parser, Subcommand};
+use chrono::Utc;
+use clap::Parser;
 
-use comfy_table::modifiers::UTF8_ROUND_CORNERS;
-use comfy_table::presets::UTF8_FULL;
 use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
-use ctt_client::queries::*;
+use ctt::cli::*;
+use ctt::queries::*;
 use reqwest::blocking::Client;
-use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
 use std::time::Duration;
 
-#[derive(Parser)]
-#[command(name = "ctt")]
-#[command(about = "cli client for the ctt graphql api server", long_about=None)]
-struct Cli {
-    #[command(subcommand)]
-    cmd: Command,
-    #[arg(short, long)]
-    server: Option<String>,
-}
-
-#[derive(Subcommand)]
-enum Command {
-    List(list_issues::Variables),
-    Show(get_issue::Variables),
-    Open(open_issue::NewIssue),
-    Close(close_issue::Variables),
-    Update(modify_issue::UpdateIssue),
-}
-
-#[derive(clap::Args)]
-struct Credentials {
-    user: String,
-}
-
 fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
     let mut table = Table::new();
-    //table.set_format(*FORMAT_CLEAN);
     table
-        .load_preset(UTF8_FULL)
-        .apply_modifier(UTF8_ROUND_CORNERS)
+        .load_preset(comfy_table::presets::NOTHING)
+        //.load_preset(UTF8_FULL)
+        //.apply_modifier(UTF8_ROUND_CORNERS)
         .set_content_arrangement(ContentArrangement::Dynamic)
         .set_header(vec![
             "id",
             "target",
-            "target status",
+            "ctt status",
+            "Enforce",
             "assignee",
             "title",
-            "ToOffline",
         ]);
 
     issues.into_iter().for_each(|issue| {
@@ -70,6 +44,11 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
         row.add_cell(Cell::new(issue.id.to_string()));
         row.add_cell(target);
         row.add_cell(status);
+        row.add_cell(if let Some(group) = issue.to_offline {
+            Cell::new(group.to_string())
+        } else {
+            Cell::new("NONE".to_string()).fg(Color::Red)
+        });
         row.add_cell(Cell::new(
             issue
                 .assigned_to
@@ -78,11 +57,6 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
                 .to_string(),
         ));
         row.add_cell(Cell::new(issue.title));
-        row.add_cell(if let Some(group) = issue.to_offline {
-            Cell::new(group.to_string())
-        } else {
-            Cell::new("".to_string())
-        });
         row.max_height(3);
         table.add_row(row);
     });
@@ -118,21 +92,23 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
         TargetStatus::DOWN => status,
     };
     table
-        .load_preset(UTF8_FULL)
-        .apply_modifier(UTF8_ROUND_CORNERS)
+        .load_preset(comfy_table::presets::NOTHING)
+        //.load_preset(UTF8_FULL)
+        //.apply_modifier(UTF8_ROUND_CORNERS)
         .set_header(vec![
             "status",
             "target",
-            "target status",
+            "ctt status",
+            "Enforce",
             "assignee",
             "title",
             "description",
-            "toOffline",
         ]);
     table.add_row(vec![
         Cell::new(issue.issue_status.to_string()),
         target,
         status,
+        offline,
         Cell::new(
             issue
                 .assigned_to
@@ -142,17 +118,16 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
         ),
         Cell::new(issue.title),
         Cell::new(issue.description),
-        offline,
     ]);
 
     println!("{table}");
 
     let mut table = Table::new();
-    //table.set_format(*FORMAT_CLEAN);
     table
-        .load_preset(UTF8_FULL)
+        .load_preset(comfy_table::presets::NOTHING)
+        //.load_preset(UTF8_FULL)
+        //.apply_modifier(UTF8_ROUND_CORNERS)
         .set_content_arrangement(ContentArrangement::Dynamic)
-        .apply_modifier(UTF8_ROUND_CORNERS)
         .set_header(vec!["author", "date", "comment"]);
     issue.comments.into_iter().for_each(|c| {
         table.add_row(vec![
@@ -165,24 +140,9 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
     println!("{table}");
 }
 
-#[derive(Serialize)]
-struct UserLogin {
-    user: String,
-    timestamp: NaiveDateTime,
-}
-
-#[derive(Serialize)]
-enum AuthRequest {
-    Munge(String),
-}
-
-#[derive(Deserialize)]
-struct Token {
-    token: String,
-}
-
 fn main() {
     let mut buf = Vec::new();
+    //TODO not needed after setting up server TLS properly
     File::open("/glade/work/shanks/ctt/ctt_client/cert.pem")
         .unwrap()
         .read_to_end(&mut buf)
@@ -191,6 +151,7 @@ fn main() {
     use reqwest::header;
     let client = Client::builder()
         .add_root_certificate(cert.clone())
+        //TODO FIXME get rid of this
         .danger_accept_invalid_certs(true)
         .timeout(Duration::from_secs(5))
         .build()
@@ -199,6 +160,7 @@ fn main() {
     let srv = if let Some(s) = args.server {
         s
     } else {
+        //TODO change to url after setting up dns for server
         "https://10.13.0.16:8000/api".to_string()
     };
 
@@ -213,6 +175,7 @@ fn main() {
         AuthRequest::Munge(munge_auth::munge(&serde_json::to_string(&login).unwrap()).unwrap());
 
     let log_resp = client
+        //TODO change to url after setting up dns for server
         .post("https://10.13.0.16:8000/login")
         .json(&auth)
         .send()
@@ -227,6 +190,7 @@ fn main() {
 
     let client = Client::builder()
         .add_root_certificate(cert)
+        //TODO FIXME get rid of this
         .danger_accept_invalid_certs(true)
         .timeout(Duration::from_secs(5))
         .default_headers(headers)
@@ -234,24 +198,24 @@ fn main() {
         .unwrap();
 
     match args.cmd {
-        Command::Open(new_issue) => match ctt_client::issue_open(&client, &srv, new_issue) {
+        Command::Open(new_issue) => match ctt::issue_open(&client, &srv, new_issue) {
             Ok(id) => println!("Opened issue {}", &id),
             Err(error) => println!("Error opening issue: {}", error),
         },
-        Command::List(filter) => match ctt_client::issue_list(&client, &srv, filter) {
+        Command::List(filter) => match ctt::issue_list(&client, &srv, filter) {
             Ok(issues) => print_issues(issues),
             Err(error) => println!("Error listing issues: {}", error),
         },
-        Command::Close(vars) => match ctt_client::issue_close(&client, &srv, vars) {
+        Command::Close(vars) => match ctt::issue_close(&client, &srv, vars) {
             Ok(status) => println!("{}", status),
             Err(error) => println!("Error opening issue: {}", error),
         },
-        Command::Show(vars) => match ctt_client::issue_show(&client, &srv, vars) {
+        Command::Show(vars) => match ctt::issue_show(&client, &srv, vars) {
             Ok(Some(status)) => print_issue(status),
             Ok(None) => println!("Issue not found"),
             Err(error) => println!("Error showing issue: {}", error),
         },
-        Command::Update(vars) => match ctt_client::issue_update(&client, &srv, vars) {
+        Command::Update(vars) => match ctt::issue_update(&client, &srv, vars) {
             Ok(status) => print_issue(status),
             Err(error) => println!("Error updating issue: {}", error),
         },

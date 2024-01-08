@@ -1,5 +1,5 @@
 [package]
-name = "ctt_client"
+name = "ctt"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -19,6 +19,13 @@ reqwest = { version = "0.11", features = ["json", "blocking"] }
 serde = "1"
 serde_json = "1"
 users = "0.11"
+
+[build-dependencies]
+clap = { version = "4", features = ["derive", "cargo", "env"] }
+clap_complete = "4"
+clap_mangen = "0.2"
+chrono = {version = "0.4", features = ["serde"] }
+serde = "1"
 
 
 [package.metadata.generate-rpm]

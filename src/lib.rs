@@ -1,5 +1,6 @@
 use graphql_client::reqwest::post_graphql_blocking as post_graphql;
 use reqwest::blocking::Client;
+pub mod cli;
 pub mod queries;
 use queries::*;
 

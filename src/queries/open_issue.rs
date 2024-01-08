@@ -1,21 +1,10 @@
-use super::{TargetStatus, ToOffline};
+use super::TargetStatus;
+pub use crate::cli::OpenNewIssue as NewIssue;
 use serde::{Deserialize, Serialize};
 
 pub struct OpenIssue;
 pub const OPERATION_NAME: &str = "OpenIssue";
 pub const QUERY : & str = "mutation OpenIssue($newIssue: NewIssue!) {\n  open(issue: $newIssue) {\n    id,\n    target{name,status}\n  }\n}\n" ;
-#[derive(Serialize, clap::Args)]
-pub struct NewIssue {
-    pub target: String,
-    pub title: String,
-    pub description: String,
-    #[serde(rename = "toOffline")]
-    #[arg(short, long, value_enum, default_value_t=ToOffline::Node)]
-    pub to_offline: ToOffline,
-    #[serde(rename = "assignedTo")]
-    #[arg(short, long)]
-    pub assigned_to: Option<String>,
-}
 #[derive(Serialize)]
 pub struct Variables {
     #[serde(rename = "newIssue")]

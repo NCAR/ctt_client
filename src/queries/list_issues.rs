@@ -1,17 +1,10 @@
 use super::*;
-use clap;
-use serde::{Deserialize, Serialize};
+pub use crate::cli::ListVariables as Variables;
+use serde::Deserialize;
 
 pub struct ListIssues;
 pub const OPERATION_NAME: &str = "ListIssues";
 pub const QUERY : & str = "query ListIssues($status: IssueStatus, $target: String) {\n  issues(issueStatus: $status, target: $target) {\n    id,\n    title,\n    assignedTo,\n    description,\n    toOffline,\n    target{name, status},\n    related{name,status},\n  }\n}\n" ;
-#[derive(Serialize, clap::Args)]
-pub struct Variables {
-    #[arg(short, long, value_enum, default_value_t=IssueStatus::OPEN)]
-    pub status: IssueStatus,
-    #[arg(short, long)]
-    pub target: Option<String>,
-}
 #[derive(Deserialize)]
 pub struct ResponseData {
     pub issues: Vec<ListIssuesIssues>,
