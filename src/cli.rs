@@ -6,6 +6,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Parser)]
 #[command(name = "ctt")]
 #[command(about = "cli client for the ctt graphql api server", long_about=None)]
+#[command(
+    infer_long_args = true,
+    infer_subcommands = true,
+    arg_required_else_help = true
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub cmd: Command,
@@ -16,9 +21,13 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Command {
     List(ListVariables),
+    #[command(arg_required_else_help = true)]
     Show(GetVariables),
+    #[command(arg_required_else_help = true)]
     Open(OpenNewIssue),
+    #[command(arg_required_else_help = true)]
     Close(CloseVariables),
+    #[command(arg_required_else_help = true)]
     Update(ModifyUpdateIssue),
 }
 
