@@ -13,12 +13,11 @@ include!("src/cli.rs");
 
 fn build_shell_completion(outdir: &Path) -> Result<(), Error> {
     let mut app = Cli::command();
-    let shells = vec![Shell::Bash, Shell::Zsh];
     app.build();
+    let outdir = outdir.join("bash-completions/completions");
+    std::fs::create_dir_all(&outdir).unwrap();
 
-    for shell in shells {
-        generate_to(shell, &mut app, "ctt", outdir)?;
-    }
+    generate_to(Shell::Bash, &mut app, "ctt", outdir)?;
 
     Ok(())
 }
@@ -26,6 +25,9 @@ fn build_shell_completion(outdir: &Path) -> Result<(), Error> {
 fn build_manpages(outdir: &Path) -> Result<(), Error> {
     let mut app = Cli::command();
     app.build();
+    let outdir = outdir.join("man/man1");
+    std::fs::create_dir_all(&outdir).unwrap();
+
     let file = Path::new(&outdir).join("ctt.1");
     let mut file = File::create(file)?;
 
