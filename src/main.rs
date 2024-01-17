@@ -9,7 +9,7 @@ use std::fs::File;
 use std::io::Read;
 use std::time::Duration;
 
-fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
+fn print_issues(mut issues: Vec<list_issues::ListIssuesIssues>) {
     let mut table = Table::new();
     table
         .load_preset(comfy_table::presets::NOTHING)
@@ -23,8 +23,10 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
             "Enforce",
             "assignee",
             "title",
+            "last updated",
         ]);
 
+    issues.sort_by(|a, b| a.updated_at.cmp(&b.updated_at));
     issues.into_iter().for_each(|issue| {
         let target = Cell::new(issue.target.as_ref().unwrap().name.clone());
         let min_status = issue
@@ -57,6 +59,7 @@ fn print_issues(issues: Vec<list_issues::ListIssuesIssues>) {
                 .to_string(),
         ));
         row.add_cell(Cell::new(issue.title));
+        row.add_cell(Cell::new(issue.updated_at));
         row.max_height(3);
         table.add_row(row);
     });

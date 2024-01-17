@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 pub struct ListIssues;
 pub const OPERATION_NAME: &str = "ListIssues";
-pub const QUERY : & str = "query ListIssues($status: IssueStatus, $target: String) {\n  issues(issueStatus: $status, target: $target) {\n    id,\n    title,\n    assignedTo,\n    description,\n    toOffline,\n    target{name, status},\n    related{name,status},\n  }\n}\n" ;
+pub const QUERY : & str = "query ListIssues($status: IssueStatus, $target: String) {\n  issues(issueStatus: $status, target: $target) {\n    id,\n    title,\n    assignedTo,\n    description,\n    toOffline,\n updatedAt, \n    target{name, status},\n    related{name,status},\n  }\n}\n" ;
 #[derive(Deserialize)]
 pub struct ResponseData {
     pub issues: Vec<ListIssuesIssues>,
@@ -18,6 +18,8 @@ pub struct ListIssuesIssues {
     pub title: String,
     #[serde(rename = "toOffline")]
     pub to_offline: Option<ToOffline>,
+    #[serde(rename = "updatedAt")]
+    pub updated_at: chrono::NaiveDateTime,
     pub target: Option<ListIssuesIssuesTarget>,
     pub related: Vec<ListIssuesIssuesTarget>,
 }
