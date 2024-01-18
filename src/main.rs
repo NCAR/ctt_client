@@ -5,8 +5,9 @@ use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
 use ctt::cli::*;
 use ctt::queries::*;
 use reqwest::blocking::Client;
-use std::fs::File;
-use std::io::Read;
+use reqwest::header;
+//use std::fs::File;
+//use std::io::Read;
 use std::time::Duration;
 
 fn print_issues(mut issues: Vec<list_issues::ListIssuesIssues>) {
@@ -144,16 +145,18 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
 }
 
 fn main() {
-    let mut buf = Vec::new();
+    //let mut buf = Vec::new();
     //TODO not needed after setting up server TLS properly
+    /*
     File::open("/glade/work/shanks/ctt/ctt_client/cert.pem")
         .unwrap()
         .read_to_end(&mut buf)
         .unwrap();
     let cert = reqwest::Certificate::from_pem(&buf).unwrap();
-    use reqwest::header;
+    */
+    eprintln!("Warning: insecure, accepting invalid certs");
     let client = Client::builder()
-        .add_root_certificate(cert.clone())
+        //.add_root_certificate(cert.clone())
         //TODO FIXME get rid of this
         .danger_accept_invalid_certs(true)
         .timeout(Duration::from_secs(5))
@@ -192,7 +195,7 @@ fn main() {
     );
 
     let client = Client::builder()
-        .add_root_certificate(cert)
+        //.add_root_certificate(cert)
         //TODO FIXME get rid of this
         .danger_accept_invalid_certs(true)
         .timeout(Duration::from_secs(5))

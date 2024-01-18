@@ -16,8 +16,8 @@ jobs:
       - name: Compile
         run: cargo build --release
       - name: Strip
-        run: strip -s target/release/ctt_client
+        run: strip -s target/release/ctt
       - name: Build rpm
         run: cargo generate-rpm
       - name: publish to gitea
-        run: curl --user shanks:${{ secrets.PACKAGING_TOKEN }} --upload-file target/generate-rpm/ctt_client-*.rpm https://git.hsg.ucar.edu/api/packages/shanks/rpm/upload
+        run: curl --user shanks:${{ secrets.PACKAGING_TOKEN }} --upload-file target/generate-rpm/ctt-*.rpm https://git.hsg.ucar.edu/api/packages/shanks/rpm/upload
