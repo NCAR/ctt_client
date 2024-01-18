@@ -6,9 +6,6 @@ license = "MIT OR Apache-2.0"
 description = "Graphql api for CTT"
 repository = "https://github.com/Will-Shanks/ctt_client"
 
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 chrono = {version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
@@ -21,15 +18,17 @@ serde_json = "1"
 users = "0.11"
 
 [build-dependencies]
+chrono = {version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive", "cargo", "env"] }
 clap_complete = "4"
 clap_mangen = "0.2"
-chrono = {version = "0.4", features = ["serde"] }
 serde = "1"
 
-
 [package.metadata.generate-rpm]
+pre_install_script = "useradd ctt --system --shell /sbin/nologin"
 assets = [
-    { source = "target/release/ctt_client", dest = "/opt/ncar/bin/pbs_client", mode = "755" },
+    { source = "target/release/ctt", dest = "/opt/ncar/bin/ctt", mode = "755" },
+    { source = "target/assets/man/man1/*", dest = "/opt/ncar/man/man1/", mode = "644", doc = true },
+    { source = "target/assets/bash-completions/completions/*", dest = "/opt/ncar/bash-completions/completions/", mode = "644" }
 ]
 
