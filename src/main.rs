@@ -167,8 +167,12 @@ fn main() {
         s
     } else {
         //TODO change to url after setting up dns for server
-        "https://10.13.0.16:8000/api".to_string()
+        //TODO get from conf file
+        //gusched01 ip address as default for now
+        "https://10.13.0.16:8000".to_string()
     };
+
+    let api_endpoint = format!("{}/api", srv);
 
     let login = UserLogin {
         user: users::get_current_username()
@@ -182,7 +186,7 @@ fn main() {
 
     let log_resp = client
         //TODO change to url after setting up dns for server
-        .post("https://10.13.0.16:8000/login")
+        .post(format!("{}/login", srv))
         .json(&auth)
         .send()
         .unwrap();
@@ -204,24 +208,24 @@ fn main() {
         .unwrap();
 
     match args.cmd {
-        Command::Open(new_issue) => match ctt::issue_open(&client, &srv, new_issue) {
+        Command::Open(new_issue) => match ctt::issue_open(&client, &api_endpoint, new_issue) {
             Ok(id) => println!("Opened issue {}", &id),
             Err(error) => println!("Error opening issue: {}", error),
         },
-        Command::List(filter) => match ctt::issue_list(&client, &srv, filter) {
+        Command::List(filter) => match ctt::issue_list(&client, &api_endpoint, filter) {
             Ok(issues) => print_issues(issues),
             Err(error) => println!("Error listing issues: {}", error),
         },
-        Command::Close(vars) => match ctt::issue_close(&client, &srv, vars) {
+        Command::Close(vars) => match ctt::issue_close(&client, &api_endpoint, vars) {
             Ok(status) => println!("{}", status),
             Err(error) => println!("Error opening issue: {}", error),
         },
-        Command::Show(vars) => match ctt::issue_show(&client, &srv, vars) {
+        Command::Show(vars) => match ctt::issue_show(&client, &api_endpoint, vars) {
             Ok(Some(status)) => print_issue(status),
             Ok(None) => println!("Issue not found"),
             Err(error) => println!("Error showing issue: {}", error),
         },
-        Command::Update(vars) => match ctt::issue_update(&client, &srv, vars) {
+        Command::Update(vars) => match ctt::issue_update(&client, &api_endpoint, vars) {
             Ok(status) => print_issue(status),
             Err(error) => println!("Error updating issue: {}", error),
         },
