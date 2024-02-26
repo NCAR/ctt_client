@@ -154,12 +154,12 @@ fn main() {
         .unwrap();
     let cert = reqwest::Certificate::from_pem(&buf).unwrap();
     */
-    eprintln!("Warning: insecure, accepting invalid certs");
+    //eprintln!("Warning: insecure, accepting invalid certs");
     let client = Client::builder()
         //.add_root_certificate(cert.clone())
         //TODO FIXME get rid of this
         .danger_accept_invalid_certs(true)
-        .timeout(Duration::from_secs(5))
+        .timeout(Duration::from_secs(15))
         .build()
         .unwrap();
     let args = Cli::parse();
@@ -168,8 +168,8 @@ fn main() {
     } else {
         //TODO change to url after setting up dns for server
         //TODO get from conf file
-        //gusched01 ip address as default for now
-        "https://10.13.0.16:8000".to_string()
+        //desched1 ip address as default for now
+        "https://10.14.20.195:8000".to_string()
     };
 
     let api_endpoint = format!("{}/api", srv);
@@ -202,7 +202,7 @@ fn main() {
         //.add_root_certificate(cert)
         //TODO FIXME get rid of this
         .danger_accept_invalid_certs(true)
-        .timeout(Duration::from_secs(5))
+        .timeout(Duration::from_secs(15))
         .default_headers(headers)
         .build()
         .unwrap();
