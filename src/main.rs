@@ -1,4 +1,4 @@
-use chrono::Utc;
+use chrono::{DateTime, Local, Utc};
 use clap::Parser;
 
 use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
@@ -60,7 +60,10 @@ fn print_issues(mut issues: Vec<list_issues::ListIssuesIssues>) {
                 .to_string(),
         ));
         row.add_cell(Cell::new(issue.title));
-        row.add_cell(Cell::new(issue.updated_at));
+        row.add_cell(Cell::new(DateTime::<Local>::from_naive_utc_and_offset(
+            issue.updated_at,
+            *Local::now().offset(),
+        )));
         row.max_height(3);
         table.add_row(row);
     });
@@ -136,7 +139,8 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
     issue.comments.into_iter().for_each(|c| {
         table.add_row(vec![
             c.created_by.clone(),
-            c.created_at.to_string(),
+            DateTime::<Local>::from_naive_utc_and_offset(c.created_at, *Local::now().offset())
+                .to_string(),
             c.comment.clone(),
         ]);
     });

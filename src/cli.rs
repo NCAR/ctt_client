@@ -105,12 +105,16 @@ pub enum IssueStatus {
     CLOSED,
 }
 
-impl ToString for IssueStatus {
-    fn to_string(&self) -> String {
-        match self {
-            IssueStatus::OPEN => "Open".to_string(),
-            IssueStatus::CLOSED => "Closed".to_string(),
-        }
+impl std::fmt::Display for IssueStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                IssueStatus::OPEN => "Open".to_string(),
+                IssueStatus::CLOSED => "Closed".to_string(),
+            }
+        )
     }
 }
 impl ::serde::Serialize for IssueStatus {
@@ -138,13 +142,17 @@ pub enum ToOffline {
     Card,
     Blade,
 }
-impl ToString for ToOffline {
-    fn to_string(&self) -> String {
-        match self {
-            ToOffline::Node => "Node".to_string(),
-            ToOffline::Card => "Card".to_string(),
-            ToOffline::Blade => "Blade".to_string(),
-        }
+impl std::fmt::Display for ToOffline {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ToOffline::Node => "Node".to_string(),
+                ToOffline::Card => "Card".to_string(),
+                ToOffline::Blade => "Blade".to_string(),
+            }
+        )
     }
 }
 impl ::serde::Serialize for ToOffline {

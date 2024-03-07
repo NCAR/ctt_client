@@ -12,15 +12,19 @@ pub enum TargetStatus {
     DOWN = 3,
     OFFLINE = 4,
 }
-impl ToString for TargetStatus {
+impl std::fmt::Display for TargetStatus {
     // Required method
-    fn to_string(&self) -> String {
-        match &self {
-            TargetStatus::DOWN => "Down".to_string(),
-            TargetStatus::ONLINE => "Online".to_string(),
-            TargetStatus::OFFLINE => "Offline".to_string(),
-            TargetStatus::DRAINING => "Draining".to_string(),
-        }
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match &self {
+                TargetStatus::DOWN => "Down".to_string(),
+                TargetStatus::ONLINE => "Online".to_string(),
+                TargetStatus::OFFLINE => "Offline".to_string(),
+                TargetStatus::DRAINING => "Draining".to_string(),
+            }
+        )
     }
 }
 impl ::serde::Serialize for TargetStatus {
