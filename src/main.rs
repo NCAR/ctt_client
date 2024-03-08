@@ -206,7 +206,7 @@ fn main() {
         //.add_root_certificate(cert)
         //TODO FIXME get rid of this
         .danger_accept_invalid_certs(true)
-        .timeout(Duration::from_secs(15))
+        .timeout(Duration::from_secs(45))
         .default_headers(headers)
         .build()
         .unwrap();
