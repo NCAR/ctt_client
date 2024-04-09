@@ -3,6 +3,8 @@ pub mod get_issue;
 pub mod list_issues;
 pub mod modify_issue;
 pub mod open_issue;
+use core::fmt;
+
 pub use crate::cli::ToOffline;
 
 #[derive(PartialEq, PartialOrd, Ord, Eq, Clone)]
@@ -12,19 +14,15 @@ pub enum TargetStatus {
     DOWN = 3,
     OFFLINE = 4,
 }
-impl std::fmt::Display for TargetStatus {
+impl fmt::Display for TargetStatus {
     // Required method
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match &self {
-                TargetStatus::DOWN => "Down".to_string(),
-                TargetStatus::ONLINE => "Online".to_string(),
-                TargetStatus::OFFLINE => "Offline".to_string(),
-                TargetStatus::DRAINING => "Draining".to_string(),
-            }
-        )
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            TargetStatus::DOWN => write!(f, "Down"),
+            TargetStatus::ONLINE => write!(f, "Online"),
+            TargetStatus::OFFLINE => write!(f, "Offline"),
+            TargetStatus::DRAINING => write!(f, "Draining"),
+        }
     }
 }
 impl ::serde::Serialize for TargetStatus {

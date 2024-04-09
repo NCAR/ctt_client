@@ -1,3 +1,5 @@
+use core::fmt;
+
 use chrono::NaiveDateTime;
 use clap::{Parser, Subcommand};
 
@@ -105,16 +107,12 @@ pub enum IssueStatus {
     CLOSED,
 }
 
-impl std::fmt::Display for IssueStatus {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                IssueStatus::OPEN => "Open".to_string(),
-                IssueStatus::CLOSED => "Closed".to_string(),
-            }
-        )
+impl fmt::Display for IssueStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            IssueStatus::OPEN => write!(f, "Open"),
+            IssueStatus::CLOSED => write!(f, "Closed"),
+        }
     }
 }
 impl ::serde::Serialize for IssueStatus {
@@ -142,17 +140,13 @@ pub enum ToOffline {
     Card,
     Blade,
 }
-impl std::fmt::Display for ToOffline {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                ToOffline::Node => "Node".to_string(),
-                ToOffline::Card => "Card".to_string(),
-                ToOffline::Blade => "Blade".to_string(),
-            }
-        )
+impl fmt::Display for ToOffline {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ToOffline::Node => write!(f, "Node"),
+            ToOffline::Card => write!(f, "Card"),
+            ToOffline::Blade => write!(f, "Blade"),
+        }
     }
 }
 impl ::serde::Serialize for ToOffline {
