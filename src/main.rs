@@ -6,6 +6,7 @@ use ctt::cli::*;
 use ctt::queries::*;
 use reqwest::blocking::Client;
 use reqwest::header;
+use std::fs;
 //use std::fs::File;
 //use std::io::Read;
 use std::time::Duration;
@@ -170,10 +171,21 @@ fn main() {
     let srv = if let Some(s) = args.server {
         s
     } else {
-        //TODO change to url after setting up dns for server
-        //TODO get from conf file
-        //desched1 ip address as default for now
-        "https://10.14.20.195:8000".to_string()
+        let hostname = fs::read_to_string("/etc/pbs.conf")
+            .unwrap()
+            .lines()
+            .map(String::from)
+            .filter(|s| s.contains("PBS_SERVER"))
+            .last()
+            .unwrap();
+        let host = hostname
+            .split('=')
+            .nth(1)
+            .unwrap()
+            .split('.')
+            .next()
+            .unwrap();
+        format!("https://{host}:8000")
     };
 
     let api_endpoint = format!("{}/api", srv);
