@@ -57,7 +57,7 @@ fn print_issues(mut issues: Vec<list_issues::ListIssuesIssues>) {
             issue
                 .assigned_to
                 .as_ref()
-                .unwrap_or(&"".to_string())
+                .unwrap_or(&"NONE".to_string())
                 .to_string(),
         ));
         row.add_cell(Cell::new(issue.title));
@@ -121,7 +121,7 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
             issue
                 .assigned_to
                 .as_ref()
-                .unwrap_or(&"".to_string())
+                .unwrap_or(&"NONE".to_string())
                 .to_string(),
         ),
         Cell::new(issue.title),
