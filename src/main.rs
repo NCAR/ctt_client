@@ -24,8 +24,8 @@ fn print_issues(mut issues: Vec<list_issues::ListIssuesIssues>) {
             "ctt status",
             "Enforce",
             "assignee",
-            "title",
             "last updated",
+            "title",
         ]);
 
     issues.sort_by(|a, b| a.updated_at.cmp(&b.updated_at));
@@ -60,11 +60,11 @@ fn print_issues(mut issues: Vec<list_issues::ListIssuesIssues>) {
                 .unwrap_or(&"NONE".to_string())
                 .to_string(),
         ));
-        row.add_cell(Cell::new(issue.title));
         row.add_cell(Cell::new(DateTime::<Local>::from_naive_utc_and_offset(
             issue.updated_at,
             *Local::now().offset(),
-        )));
+        ).format("%Y-%m-%d %H:%M:%S")));
+        row.add_cell(Cell::new(issue.title));
         row.max_height(3);
         table.add_row(row);
     });
@@ -140,7 +140,7 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
     issue.comments.into_iter().for_each(|c| {
         table.add_row(vec![
             c.created_by.clone(),
-            DateTime::<Local>::from_naive_utc_and_offset(c.created_at, *Local::now().offset())
+            DateTime::<Local>::from_naive_utc_and_offset(c.created_at, *Local::now().offset()).format("%Y-%m-%d %H:%M:%S")
                 .to_string(),
             c.comment.clone(),
         ]);
