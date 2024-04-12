@@ -60,10 +60,10 @@ fn print_issues(mut issues: Vec<list_issues::ListIssuesIssues>) {
                 .unwrap_or(&"NONE".to_string())
                 .to_string(),
         ));
-        row.add_cell(Cell::new(DateTime::<Local>::from_naive_utc_and_offset(
-            issue.updated_at,
-            *Local::now().offset(),
-        ).format("%Y-%m-%d %H:%M:%S")));
+        row.add_cell(Cell::new(
+            DateTime::<Local>::from_naive_utc_and_offset(issue.updated_at, *Local::now().offset())
+                .format("%Y-%m-%d %H:%M:%S"),
+        ));
         row.add_cell(Cell::new(issue.title));
         row.max_height(3);
         table.add_row(row);
@@ -140,7 +140,8 @@ fn print_issue(issue: get_issue::GetIssueIssue) {
     issue.comments.into_iter().for_each(|c| {
         table.add_row(vec![
             c.created_by.clone(),
-            DateTime::<Local>::from_naive_utc_and_offset(c.created_at, *Local::now().offset()).format("%Y-%m-%d %H:%M:%S")
+            DateTime::<Local>::from_naive_utc_and_offset(c.created_at, *Local::now().offset())
+                .format("%Y-%m-%d %H:%M:%S")
                 .to_string(),
             c.comment.clone(),
         ]);
@@ -234,7 +235,7 @@ fn main() {
         },
         Command::Close(vars) => match ctt::issue_close(&client, &api_endpoint, vars) {
             Ok(status) => println!("{}", status),
-            Err(error) => println!("Error opening issue: {}", error),
+            Err(error) => println!("Error closing issue: {}", error),
         },
         Command::Show(vars) => match ctt::issue_show(&client, &api_endpoint, vars) {
             Ok(Some(status)) => print_issue(status),
