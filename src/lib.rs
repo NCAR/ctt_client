@@ -61,10 +61,14 @@ pub fn issue_update(
     vars: modify_issue::UpdateIssue,
 ) -> Result<get_issue::GetIssueIssue, String> {
     let issue = modify_issue::Variables { issue: vars };
-    let resp_body = post_graphql::<modify_issue::ModifyIssue, _>(client, srv, issue).unwrap();
-    if let Some(errors) = resp_body.errors {
-        return Err(errors[0].message.to_string());
+    match post_graphql::<modify_issue::ModifyIssue, _>(client, srv, issue) {
+        Ok(resp_body) => {
+            if let Some(errors) = resp_body.errors {
+                return Err(errors[0].message.to_string());
+            }
+            let data: modify_issue::ResponseData = resp_body.data.unwrap();
+            Ok(data.update_issue)
+        }
+        Err(e) => Err(e.to_string()),
     }
-    let data: modify_issue::ResponseData = resp_body.data.unwrap();
-    Ok(data.update_issue)
 }
