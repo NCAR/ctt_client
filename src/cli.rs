@@ -56,8 +56,8 @@ pub struct Token {
 
 #[derive(Serialize, clap::Args)]
 pub struct ListVariables {
-    #[arg(short, long, value_enum, default_value_t=IssueStatus::OPEN)]
-    pub status: IssueStatus,
+    #[arg(short, long, value_enum)]
+    pub status: Option<IssueStatus>,
     #[arg(short, long)]
     pub target: Option<String>,
 }
@@ -105,13 +105,17 @@ pub struct ModifyUpdateIssue {
 pub enum IssueStatus {
     OPEN,
     CLOSED,
+    OPENING,
+    CLOSING,
 }
 
 impl fmt::Display for IssueStatus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             IssueStatus::OPEN => write!(f, "Open"),
+            IssueStatus::OPENING => write!(f, "Opening"),
             IssueStatus::CLOSED => write!(f, "Closed"),
+            IssueStatus::CLOSING => write!(f, "Closing"),
         }
     }
 }
@@ -119,7 +123,9 @@ impl ::serde::Serialize for IssueStatus {
     fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
         ser.serialize_str(match *self {
             IssueStatus::OPEN => "OPEN",
+            IssueStatus::OPENING => "OPENING",
             IssueStatus::CLOSED => "CLOSED",
+            IssueStatus::CLOSING => "CLOSING",
         })
     }
 }
@@ -128,7 +134,9 @@ impl<'de> ::serde::Deserialize<'de> for IssueStatus {
         let s: String = ::serde::Deserialize::deserialize(deserializer)?;
         match s.as_str() {
             "OPEN" => Ok(IssueStatus::OPEN),
+            "OPENING" => Ok(IssueStatus::OPENING),
             "CLOSED" => Ok(IssueStatus::CLOSED),
+            "CLOSING" => Ok(IssueStatus::CLOSING),
             _ => panic!("can't parse {}", s),
         }
     }
